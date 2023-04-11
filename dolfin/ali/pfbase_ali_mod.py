@@ -338,6 +338,7 @@ class InitialConditionsBench6(UserExpression):
     def value_shape(self):
         return (3,)
     
+    
 class InitialConditionsBench_ali(UserExpression):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -349,12 +350,10 @@ class InitialConditionsBench_ali(UserExpression):
         # c, mu, phi, displacement in x direction, displacement in y direction
         # 0,  1,   2,
 
-        values[0] = self.c0 + self.c1*(np.cos(0.2*x[0])*np.cos(0.11*x[1])
-                +(np.cos(0.13*x[0])*np.cos(0.087*x[1]))**2
-                + np.cos(0.025*x[0] - 0.15*x[1])*np.cos(0.07*x[0] - 0.02*x[1]))
+        values[0] = self.c0 + self.c1*(np.cos(x[0]))
         values[1] = 0.0
         values[2] = 0.0
-        values[3] = 0.0
+        values[3] = 0.1
         values[4] = 0.0
   
 
