@@ -350,7 +350,7 @@ class InitialConditionsBench_ali(UserExpression):
         # c, mu, phi, displacement in x direction, displacement in y direction
         # 0,  1,   2,
 
-        values[0] = self.c0 + self.c1*(np.cos(x[0]))
+        values[0] = self.c0 + self.c1*(np.cos(0.2*x[0]))
         values[1] = 0.0
         values[2] = 0.0
         values[3] = 0.1
@@ -359,6 +359,43 @@ class InitialConditionsBench_ali(UserExpression):
 
     def value_shape(self):
         return (5,)
+
+    
+
+class InitialConditionsBench_ali_AC(UserExpression):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.c0 = args[0]
+        self.c1 = args[1]
+        self.epsilon_eta = args[2]
+        self.psi =args[3]
+
+    def eval(self, values, x):
+        # indices
+        # c, mu, phi, displacement in x direction, displacement in y direction
+        # 0,  1,   2,
+
+        values[0] = self.c0 + self.c1*(np.cos(0.2*x[0]))
+        values[1] = 0.0
+        values[2] = 0.0
+        values[3] = 0.1
+        values[4] = 0.0
+        
+        i = 1
+        ii = 2
+        values[5] = 0.5 + self.epsilon_eta * (
+                    np.cos((0.01*ii)*x[0] - 4.0) * np.cos((0.007+0.01*ii)*x[1]) +
+                    np.cos((0.11+0.01*ii)*x[0]) * np.cos((0.11+0.01*ii)*x[1]) +
+                    self.psi * (
+                        np.cos((0.046+0.001*i)*x[0] - (0.0405+0.001*i)*x[1]) *
+                        np.cos((0.031+0.001*i)*x[0] - (0.004+0.001*i)*x[1])
+                        )**2
+                    )**2
+  
+
+    def value_shape(self):
+        return (6,)
+    
 
 class LangevinNoise(UserExpression):
     def __init__(self, *args, **kwargs):
