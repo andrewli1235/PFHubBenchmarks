@@ -151,15 +151,18 @@ ux = df.variable(ux)
 uy = df.variable(uy)
 xi = df.variable(xi)
 
+##################################
+# BC
+##################################
+
 boundary_markers = df.MeshFunction('size_t', mesh, mesh.topology().dim()-1,0)
 
+tol = 1e-12
 class Boundary_right(SubDomain):
-    tol = 1E-14
     def inside(self, x, on_boundary):
         return on_boundary and near(x[0], Lx, tol)
     
 class Boundary_top_bottom(SubDomain):
-    tol = 1E-14
     def inside(self, x, on_boundary):
         return on_boundary and (near(x[1], 0, tol) or near(x[1], Ly, tol))
     
@@ -176,8 +179,6 @@ ds = Measure('ds', domain=mesh, subdomain_data=boundary_markers)
 j_n_theta = 1.0 # right boundary condition
 
 
-# BC
-tol = 1E-12
 def boundary_left(x, on_boundary):
     return on_boundary and df.near(x[0], 0, tol)
 
@@ -327,7 +328,7 @@ nlparams['linear_solver'] = 'gmres'
 #nlparams['preconditioner'] = 'petsc_amg'
 nlparams['preconditioner'] = 'hypre_amg'
 
-nlparams['krylov_solver']['maximum_iterations'] = 5000
+nlparams['krylov_solver']['maximum_iterations'] = 1000
 #nlparams['krylov_solver']['monitor_convergence'] = True
 
 
@@ -365,7 +366,7 @@ w.interpolate(w_ic)
 w0.interpolate(w_ic)
 
 benchmark_output = []
-end_time = df.Constant(3) # 400.0
+end_time = df.Constant(500) # 400.0
 iteration_count = 0
 dt_min = 1e-4
 dt.assign(1e-2)
