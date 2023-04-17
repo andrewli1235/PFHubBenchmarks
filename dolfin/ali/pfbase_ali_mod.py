@@ -441,31 +441,6 @@ def cahn_hilliard_weak_form(c, mu, c_, mu_, c0, dt, M, kappa, dfdc):
 
     return F
 
-#for equation which couples a conserved and non-conserved time evolution together
-def mixed_CH_weak_form(c, mu, c_, mu_, c0, dt, M, kappa, dfdc):
-
-    # """
-    # d/dt c  = div(M * grad(\mu))
-    #     \mu = F'(c) - \kappa * lapl(c)
-    # """
-
-    # CH - c
-    Fc_lhs =  c_ * ((c - c0) / dt) * dx
-    Fc_rhs = -inner(grad(c_), M * grad(mu)) * dx
-    
-    Fc = Fc_lhs - Fc_rhs
-    
-    # CH - mu
-    Fmu_lhs = mu_ * mu * dx
-    Fmu_rhs = mu_ * dfdc * dx + kappa * inner(grad(mu_), grad(c)) * dx
-    
-    Fmu = Fmu_lhs - Fmu_rhs
-    
-    # CH
-    F = Fc + Fmu
-
-    return F
-
 
 def allen_cahn_RHS_IBP(eta, eta_, L, kappa, dfdeta, f):
 
