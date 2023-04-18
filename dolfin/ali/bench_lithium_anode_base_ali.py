@@ -59,7 +59,7 @@ class InitialConditionsBench_void(UserExpression):
 
     def eval(self, values, x):
         # indices
-        # c, phi, x displacement, y displacement, xi 
+        # theta, phi, x displacement, y displacement, xi 
         # 0,  1,   2,              3,              4,
         
 
@@ -69,12 +69,12 @@ class InitialConditionsBench_void(UserExpression):
         values[3] = 0.0
         
         r = np.sqrt((x[0]-self.Lx)**2 + (x[1]-0.5*self.Ly)**2)
-        
+        r_diff = r-self.R
         if r < self.R:
-            values[0] = 0.0
-            values[4] = 0.0
+            
+            values[4] = 0.5*(1+np.tanh(2*np.pi*r_diff/(1e-6)))
         else:
-            values[0] = 0.95
+            
             values[4] = 1.0
   
 
@@ -92,7 +92,7 @@ df.parameters["form_compiler"]["quadrature_degree"] = 3
 ###################################
 # Create or read mesh
 ###################################
-Lx = Ly = 100.0      # 20 grids will act as the initial void location
+Lx = Ly = 5e-6     # 20 grids will act as the initial void location
 Nx = Ny = 100        
 mesh = df.RectangleMesh(df.Point(0.0, 0.0), df.Point(Lx, Ly), Nx, Ny, 'crossed')
 
@@ -276,7 +276,7 @@ F_theta += w_[0] *  0.0 * ds(1)
 Fp = poisson_weak_form(w[1], w_[1], -k * w[0] / epsilon, df.Constant(1.0))
 F_mx = euler_bwd_weak_form(w[2], w_[2], df.Constant(0.0), dt, df.Constant(0.0))
 F_my = euler_bwd_weak_form(w[3], w_[3], df.Constant(0.0), dt, df.Constant(0.0))
-F_1 =  Fp + F_mx + F_my
+F_1 =  F_theta + Fp + F_mx + F_my
 
 dg = 2*xi*(1-2*xi**2) 
 
@@ -318,7 +318,7 @@ nlparams['line_search'] = 'cp'       # (8s) #
 
 # 
 nlparams['linear_solver'] = 'gmres'
-#nlparams['preconditioner'] = 'sor'
+nlparams['preconditioner'] = 'sor'
 
 #nlparams['linear_solver'] = 'gmres'
 #nlparams['linear_solver'] = 'bicgstab'
@@ -327,7 +327,7 @@ nlparams['linear_solver'] = 'gmres'
 #nlparams['preconditioner'] = 'none'
 #nlparams['preconditioner'] = 'sor'
 #nlparams['preconditioner'] = 'petsc_amg'
-nlparams['preconditioner'] = 'hypre_amg'
+#nlparams['preconditioner'] = 'hypre_amg'
 
 nlparams['krylov_solver']['maximum_iterations'] = 1000
 #nlparams['krylov_solver']['monitor_convergence'] = True
@@ -373,6 +373,7 @@ dt_min = 1e-4
 dt.assign(1e-2)
 t1 = time.time()
 
+'''
 while float(t) < float(end_time) + df.DOLFIN_EPS:
 
     tprev = float(t)
@@ -443,3 +444,4 @@ if df.MPI.rank(mesh.mpi_comm()) == 0:
             )
 else:
     pass
+'''
