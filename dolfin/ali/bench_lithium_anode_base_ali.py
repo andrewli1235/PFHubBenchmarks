@@ -24,7 +24,6 @@ def mixed_Li_weak_form(theta, xi, theta_, theta0, xi0, dt, D_eff, Omega_li, Omeg
 
     # Li occupancy - theta
     Omega_diff = Omega_Li - Omega_v
-    
     Fc_lhs =  theta_ * (h(xi)*(theta - theta0) / dt + theta*dh(xi) * (xi-xi0)/dt) * dx
     Fc_rhs = -inner(grad(theta_), 0.5 * D_eff * h(xi) * grad(theta)/RT) * dx
     Fc_rhs += inner(grad(theta_), D_eff * h(xi) * theta* Omega_diff * grad(theta)/RT) * dx
@@ -60,7 +59,7 @@ class InitialConditionsBench_void(UserExpression):
 
     def eval(self, values, x):
         # indices
-        # c, phi, x displacement, y displacement, ksi 
+        # c, phi, x displacement, y displacement, xi 
         # 0,  1,   2,              3,              4,
         
 
@@ -69,11 +68,13 @@ class InitialConditionsBench_void(UserExpression):
         values[2] = 0.0
         values[3] = 0.0
         
-        r = np.sqrt((x[0]-0.5*self.Lx)**2 + (x[1]-0.5*self.Ly)**2)
+        r = np.sqrt((x[0]-self.Lx)**2 + (x[1]-0.5*self.Ly)**2)
         
         if r < self.R:
+            values[0] = 0.0
             values[4] = 0.0
         else:
+            values[0] = 0.95
             values[4] = 1.0
   
 
@@ -103,7 +104,7 @@ dt = df.Constant(1e-1)
 
 # parameters
 
-D_eff = 7.5e-13      # Effective diffusivity in Li metal m^2/s
+D_eff = 7.5e-10      # Effective diffusivity in Li metal m^2/s
 E_Li = 4.9           # Young's modulus of Li metal in GPa
 nu_Li = -0.38        # Poisson's ratio of Li metal
 nu_LLZO = 0.257      # Poisson's ratio for LLZO
@@ -127,7 +128,7 @@ epsilon = 1.0
 # FEM setup
 P1 = df.FunctionSpace(mesh, 'P', 1)
 PE = P1.ufl_element()
-ME = [PE, PE, PE, PE, PE] # c, phi, ux, uy, ksi
+ME = [PE, PE, PE, PE, PE] # c, phi, ux, uy, xi
 
 ME = df.MixedElement(ME)
 W  = df.FunctionSpace(mesh,  ME)
@@ -137,7 +138,7 @@ dw = df.TrialFunction(W)
 w_ = df.TestFunction(W)
 
 ###### Initial conditions #####
-radius = 10.0
+radius = 5.0
 
 w0 = df.Function(W)
 w_ic = InitialConditionsBench_void(Lx, Ly, radius, degree=2)
@@ -176,7 +177,7 @@ b_t_b.mark(boundary_markers, 1)
 
 ds = Measure('ds', domain=mesh, subdomain_data=boundary_markers)
 
-j_n_theta = 1.0 # right boundary condition
+j_n_theta = -0.001 # right boundary condition
 
 
 def boundary_left(x, on_boundary):
@@ -280,8 +281,8 @@ F_1 =  Fp + F_mx + F_my
 dg = 2*xi*(1-2*xi**2) 
 
 F_xi = lattice_site_weak_form(theta, w[4], w_[4], theta_eq, w0[4], dt, w_double, L, kappa, Omega_v, Omega_L, RT, dg)
-F_xi += w_[4] * 0.0 * ds(0)
-F_xi += w_[4] * 0.0 * ds(1)
+# F_xi += w_[4] * 0.0 * ds(0)
+# F_xi += w_[4] * 0.0 * ds(1)
 F = F_1 + F_xi
 
 
@@ -366,7 +367,7 @@ w.interpolate(w_ic)
 w0.interpolate(w_ic)
 
 benchmark_output = []
-end_time = df.Constant(500) # 400.0
+end_time = df.Constant(25) # 400.0
 iteration_count = 0
 dt_min = 1e-4
 dt.assign(1e-2)
@@ -413,13 +414,13 @@ while float(t) < float(end_time) + df.DOLFIN_EPS:
     ############
     # Analysis
     ############
-    c, phi, ux, uy, ksi = w.split()
+    theta, phi, ux, uy, xi = w.split()
 
     if save_solution:
-        outfile.write(c , "c" , float(t))
+        outfile.write(xi, "c" , float(t))
 
     F_total = 1 #total_free_energy(f_chem, f_elec, f_m, kappa)
-    C_total = total_solute(c)
+    C_total = total_solute(theta)
     benchmark_output.append([float(t), F_total, C_total])
 
 t2 = time.time()

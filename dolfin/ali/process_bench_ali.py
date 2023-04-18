@@ -6,7 +6,7 @@ import pandas as pd
 import os, shutil
 
 def process_bench(dirname):
-    hdf = HDF5File(MPI.comm_world, dirname + "conc.h5", "r")
+    hdf = HDF5File(MPI.comm_world, dirname + "bench_ali_ac/" +"conc.h5", "r")
 
     stats = pd.read_csv(dirname + "bench_ali_ac_out.csv")
     times = np.array(stats.time)
@@ -32,7 +32,7 @@ def process_bench(dirname):
     return mesh, times, cs, stats
 
 
-dirname = "./results/bench_ali_ac/"
+dirname = "./results/"
 mesh, times, cs, stats = process_bench(dirname)
 
 file = File(dirname + "c.pvd" , "compressed")

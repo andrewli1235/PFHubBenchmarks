@@ -526,11 +526,11 @@ def euler_bwd_weak_form(u, u_, u0, dt, f):
 
 # order parameter interpolation function and derivative
 def h(u):
-    return u**3 * (6*u**2 - 15*u + 10)
+    return u**2 * (u**2 - 3*u + 3)
 
 # only active in the interface region
 def dh(u):
-    return 3*u**2 * (6*u**2 - 15*u + 10) + u**3 * (12*u - 15)
+    return 2*u*(u**2-3*u+3)+u**2*(2*u-3)
 
 #######################################################################
 #
